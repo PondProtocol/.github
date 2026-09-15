@@ -29,7 +29,7 @@ The table below describes how the two assets are **defined in [`rpnd/config/toke
 | | **\$PND** | **\$rPND** |
 | --- | --- | --- |
 | Ledger type | Issued currency (IOU) | Multi-Purpose Token (MPT) |
-| Identifier | Currency code `PND` + issuer address (address not published) | Ticker `RPND`, plus the `MPTokenIssuanceID` that creation would assign |
+| Identifier | Currency code `PND` **plus** the [issuer address](#what-is-on-ledger-today) — the pair is the identity; the code alone is not | Ticker `RPND`, plus the `MPTokenIssuanceID` that creation would assign |
 | Holder opt-in | `TrustSet` to the issuer | `MPTokenAuthorize` |
 | Amount shape | `{ currency, issuer, value }` | `{ mpt_issuance_id, value }` |
 | Decimals / scale | 6 display decimals, tick size 5 | `AssetScale` 6 |
@@ -48,20 +48,29 @@ Both assets are intended to be issued from one cold account. The \$rPND metadata
 
 Nothing.
 
-The issuer account exists and is funded on mainnet, but **it has not been configured and has issued nothing**. No account flags are set, so there is no `Domain`, no `TransferRate`, and no `TickSize`. It owns no ledger objects, which means no trust lines, no \$PND obligations outstanding, and no \$rPND issuance. On Devnet and Testnet the account does not exist at all. Funding an account is not a launch; it is the prerequisite to one.
+The issuing account is **`rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`** on mainnet. It is funded, and that is all. **It has not been configured and has issued nothing.** No account flags are set, so there is no `Domain`, no `TransferRate`, and no `TickSize`. It owns no ledger objects, which means no trust lines, no \$PND obligations outstanding, and no \$rPND issuance. On Devnet and Testnet the account does not exist at all. Funding an account is not a launch; it is the prerequisite to one.
 
 So every parameter in the table above is a configured intention that takes effect only when the issuance transactions are actually submitted, and none of them have been.
 
-The issuer address is deliberately not published here yet, precisely because publishing it now would imply a launch that has not happened. When it is published, you will be able to confirm all of the above yourself instead of taking this page's word for it:
+### Check it yourself
+
+The account is public ledger data, so none of the above needs to be taken on trust:
 
 ```bash
-account_info     <issuer>   # account flags, Domain, TransferRate, TickSize
-account_lines    <issuer>   # trust lines — who holds $PND
-account_objects  <issuer>   # MPT issuance objects — whether $rPND exists
-gateway_balances <issuer>   # outstanding obligations — issued $PND supply
+account_info     rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc   # account flags, Domain, TransferRate, TickSize
+account_lines    rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc   # trust lines — who holds $PND
+account_objects  rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc   # MPT issuance objects — whether $rPND exists
+gateway_balances rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc   # outstanding obligations — issued $PND supply
 ```
 
-This page quotes no balances, ledger indexes, or sequence numbers, because they go stale. Run the queries against a current validated ledger and trust that instead.
+As things stand, those return an unconfigured account: no flags set, no trust lines, no objects, no obligations. If that ever stops being true, this page is out of date — believe the ledger, not the page. Deliberately quoted nowhere here are balances, ledger indexes, and sequence numbers, because they go stale; run the queries against a current validated ledger instead.
+
+### Why the address matters
+
+The currency code `PND` is not exclusive to us, and that is the practical reason the address is published here rather than held back. Any XRPL account can issue a token under any code, and several already do: other mainnet accounts issue tokens under the exact code `PND`, and others under near-identical variants such as `Pnd`, `PNDN`, and `PNDC`. An IOU's identity is the pair *(currency code, issuer address)* — the code on its own tells you nothing, and an interface that keys off the ticker alone will conflate all of them.
+
+> [!CAUTION]
+> **Nothing trading as `PND` today is \$PND.** The issuing account above has issued nothing, on any network. Any `PND` token you can currently find on an exchange or in a DEX order book came from a different account and has no connection to this project. When \$PND is issued it will come from `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` and this page will say so. Until then, treat the address as a tool for refusing to buy the wrong token.
 
 ## What mainnet supports today
 
@@ -90,7 +99,7 @@ Two consequences follow, and both matter for anyone waiting on these tokens.
 | [**pnd**](https://github.com/PondProtocol/PND) | \$PND, the IOU — the token-facing reference for holders, wallets, exchanges, and indexers. | Draft PR open with the token spec, trust-line mechanics, integration notes, and a \$PND-versus-\$rPND comparison. Documentation only; the transactions that would issue \$PND live in `rpnd`. |
 | [**rpnd**](https://github.com/PondProtocol/rPND) | \$rPND, the MPT — and the operator source of truth for on-ledger config: `config/tokens.json`, XLS-26/XLS-89 metadata, transaction builders, and an operator CLI. Apache-2.0. | Furthest along. The toolkit runs, builds its transactions offline, and is covered by a test suite and CI, with an opt-in live Devnet suite; a token-facing README, the \$rPND spec, and the rationale for choosing an MPT over an IOU are merged to `main`. |
 
-All three are documentation and tooling. Nothing has been issued on any network, no issuer address is published yet, and none of these repositories has been audited.
+All three are documentation and tooling. Nothing has been issued on any network, and none of these repositories has been audited.
 
 > If a link above 404s for you, that repository is still private.
 
@@ -127,11 +136,12 @@ Found a security problem? Please do not open a public issue — see the [Securit
     - TODO: X / Twitter handle
     - TODO: Discord or other community channel
     - TODO: contact email for general enquiries
-    - TODO: mainnet issuer address + $rPND MPTokenIssuanceID, once issuance actually happens.
-           The issuer account is funded on mainnet but entirely unconfigured, so the address is
-           withheld on purpose: publishing it now would read as a launch announcement.
-           When it does go in, update "What is on ledger today" in the same commit — that
-           section and the address must never disagree.
+    - TODO: $rPND MPTokenIssuanceID, once MPTokenIssuanceCreate actually succeeds.
+           The issuer address is no longer a TODO: it is published in "What is on ledger today",
+           alongside the statements that the account is unconfigured and has issued nothing.
+           Those statements are what make publishing it safe, so keep them together. If the
+           account is ever configured or issues anything, the "unconfigured / issued nothing"
+           wording and the CAUTION callout must be corrected in the same commit.
     - TODO: final $rPND MaximumAmount. The config value is an unfrozen working default and is
            deliberately not quoted on this page; publish it only once the figure is settled.
     - TODO: how the $PND 100B target supply is enforced, if at all (issuer key policy,

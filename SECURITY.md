@@ -60,4 +60,6 @@ Please give us a reasonable opportunity to fix the issue before disclosing it pu
 
 ## Impersonation and scams
 
-We will never DM you asking for a seed, a private key, or a wallet connection, and we will never ask you to send funds to claim anything. Verify anything claiming to be from Pond Protocol against the repositories in this organization. Until a token is issued on mainnet and the issuer address is published here, **any address presented as an official Pond Protocol token is fraudulent.**
+We will never DM you asking for a seed, a private key, or a wallet connection, and we will never ask you to send funds to claim anything. Verify anything claiming to be from Pond Protocol against the repositories in this organization.
+
+The issuing account is published on the [organization profile](https://github.com/PondProtocol), and it has issued nothing on any network. Check it directly with `account_lines` and `account_objects` rather than trusting a screenshot. Because no token exists yet, **anything currently presented as \$PND or \$rPND is fraudulent**, whatever ticker or address it carries — and note that the currency code `PND` is not exclusive, so unrelated tokens already use it and near-identical variants of it.
