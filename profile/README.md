@@ -24,7 +24,7 @@ Pond Protocol is designing two related assets for the XRP Ledger. They are delib
 
 ## The two-token model
 
-The table below describes how the two assets are **defined in [`rpnd/config/tokens.json`](https://github.com/PondProtocol/rPND/blob/main/config/tokens.json)** — the parameters the issuance transactions would apply if they were submitted. It is a statement of intent, not a description of the ledger.
+The table below describes how the two assets are **defined in [`rpnd/config/tokens.json`](https://github.com/PondProtocol/rPND/blob/main/config/tokens.json)** — the parameters the issuance transactions would apply if they were submitted. It is a statement of intent, not a description of the ledger — except the final row, which is a fact about mainnet as it stands.
 
 | | **\$PND** | **\$rPND** |
 | --- | --- | --- |
@@ -34,14 +34,15 @@ The table below describes how the two assets are **defined in [`rpnd/config/toke
 | Amount shape | `{ currency, issuer, value }` | `{ mpt_issuance_id, value }` |
 | Decimals / scale | 6 display decimals, tick size 5 | `AssetScale` 6 |
 | Metadata | XLS-26 `xrp-ledger.toml`, to be linked from the issuer `Domain` | XLS-89 JSON, hex-encoded into `MPTokenMetadata` at creation (1024-byte cap) |
-| Flags the config would set | Default Ripple, Disallow XRP, transfer rate 0 | Transferable, lockable, and **clawback permanently disabled** via `ImmutableFlags` |
+| Flags the config would set | Default Ripple, Disallow XRP, transfer rate 0 | Transferable, lockable, trading not enabled, and **clawback permanently disabled** via `ImmutableFlags` |
 | How supply works | No ledger cap; the outstanding amount is whatever the issuer owes across its trust lines | `MaximumAmount`, fixed at creation and enforced by the ledger |
+| Tradable once issued, on mainnet as it stands | Yes — DEX order books and AMM pools | **No** — mainnet rejects MPT trading outright ([why](#what-mainnet-supports-today)) |
 
 Supply works in opposite directions for the two, which is worth understanding before either exists. The XRP Ledger stores no supply figure for an issued currency, so \$PND's **target supply of 100,000,000,000** is an issuer policy target rather than anything the ledger would enforce; the outstanding amount at any moment is simply the sum of what the issuer owes. \$rPND is the reverse: an MPT's `MaximumAmount` is fixed at creation and enforced by the protocol, but the figure itself is still an open decision. The value in `config/tokens.json` is an unfrozen working default and should not be quoted as \$rPND's supply.
 
 Both assets are intended to be issued from one cold account. The \$rPND metadata would record `paired_iou_currency = "PND"` so indexers and operators can see the relationship — but that is documentation, not a ledger guarantee. The XRPL does not atomically bind an IOU to an MPT, and the two would not be interchangeable on ledger.
 
-\$rPND also requires a network with the MPTokens amendment enabled. The config marks Devnet and Mainnet as MPT-capable and Testnet as not; the mainnet flag has not been checked against live amendment status.
+\$rPND also requires a network with MPT support. The config marks Devnet and Mainnet as MPT-capable and Testnet as not — see [What mainnet supports today](#what-mainnet-supports-today) for what that does and does not mean in practice.
 
 ## What is on ledger today
 
@@ -61,6 +62,25 @@ gateway_balances <issuer>   # outstanding obligations — issued $PND supply
 ```
 
 This page quotes no balances, ledger indexes, or sequence numbers, because they go stale. Run the queries against a current validated ledger and trust that instead.
+
+## What mainnet supports today
+
+Checked against the live amendment set rather than assumed from config. A flat "mainnet supports MPTs" would be misleading in both directions, so the detail matters:
+
+| Amendment | Mainnet | What it means for Pond Protocol |
+| --- | --- | --- |
+| `MPTokensV1` | Enabled | MPTs exist on mainnet, so an \$rPND issuance is possible in principle |
+| `DynamicMPT` | **Not enabled** | The \$rPND config sets `ImmutableFlags`, which depends on this — see below |
+| `Clawback` | Enabled | Available on the IOU side; whether \$PND would use it is undecided |
+| `AMM`, `AMMClawback` | Enabled | AMM pools are available to IOUs, but not to MPTs — see below |
+| `Escrow`, `TokenEscrow`, `fixTokenEscrowV1` | Enabled | Escrow of issued tokens is supported on the IOU side |
+
+Two consequences follow, and both matter for anyone waiting on these tokens.
+
+**The \$rPND config as written would be rejected on mainnet today.** It sets `ImmutableFlags` to disable clawback permanently, and that field arrives with `DynamicMPT`, which is not enabled. Submitting the create transaction as currently configured would return `temDISABLED`. Either the config or the amendment set has to change before \$rPND can exist on mainnet.
+
+> [!WARNING]
+> **MPTs cannot trade on mainnet at all.** `OfferCreate` and `AMMCreate` both return `temDISABLED` for an MPT, even when the issuance sets `CanTrade` — and the \$rPND config does not set it in any case. There is no order book and no AMM pool for an MPT today. If both tokens were issued right now, **\$PND, the IOU, would be the only tradable one of the two.** \$rPND could be held and transferred between holders, but not traded on ledger.
 
 ## Repositories
 
@@ -117,4 +137,9 @@ Found a security problem? Please do not open a public issue — see the [Securit
     - TODO: how the $PND 100B target supply is enforced, if at all (issuer key policy,
            blackholing, or nothing). The target is stated above as policy, not as a ledger rule.
   Do not add placeholder or "coming soon" links to the rendered page.
+
+  MAINTENANCE: "What mainnet supports today" states live amendment status and will go stale.
+  Re-check MPTokensV1 and DynamicMPT before any launch announcement. If DynamicMPT is enabled,
+  the note that the $rPND create would be rejected stops being true; if MPT trading becomes
+  possible on mainnet, the tradability warning must be revised or removed.
 -->
