@@ -1,0 +1,75 @@
+name: Token parameter change
+description: Propose a change to $PND or $rPND parameters in config/tokens.json
+labels: ["token-parameters", "needs-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        `config/tokens.json` is the canonical definition of \$PND and \$rPND. Some values are **permanent once a token exists on a network** — notably the MPT's `assetScale`, `maximumAmount`, and the immutable flags that permanently disable clawback.
+
+        Please be precise. Review here is deliberately slow.
+
+  - type: dropdown
+    id: token
+    attributes:
+      label: Which token
+      options:
+        - $PND (IOU)
+        - $rPND (MPT)
+        - both
+    validations:
+      required: true
+
+  - type: input
+    id: field
+    attributes:
+      label: Field
+      description: The JSON path in `config/tokens.json`.
+      placeholder: "rpnd.assetScale"
+    validations:
+      required: true
+
+  - type: input
+    id: from-to
+    attributes:
+      label: From → to
+      placeholder: "6 → 8"
+    validations:
+      required: true
+
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Why
+      description: What this enables or fixes.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mutability
+    attributes:
+      label: Is this field fixed at creation time?
+      description: Check `docs/tokens.md` and the XRPL docs if you are unsure.
+      options:
+        - "Fixed permanently once the token is created"
+        - "Can be updated after creation"
+        - "Not sure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: existing-issuance
+    attributes:
+      label: Effect on existing issuances
+      description: What happens to tokens already created on Devnet, Testnet, or Mainnet if this is merged? Write "none known" if you believe there is no effect.
+    validations:
+      required: true
+
+  - type: textarea
+    id: metadata
+    attributes:
+      label: Metadata impact
+      description: Does this change the XLS-89 blob or the XLS-26 `xrp-ledger.toml`? If so, paste the relevant `npx tsx src/cli.ts encode-metadata` output.
+      render: shell
+    validations:
+      required: false
