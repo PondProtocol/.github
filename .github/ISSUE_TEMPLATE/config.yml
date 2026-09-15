@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/PondProtocol/.github/blob/main/SECURITY.md
+    about: Do not open a public issue for security problems. Follow the security policy instead.
+  - name: Contributing guide
+    url: https://github.com/PondProtocol/.github/blob/main/CONTRIBUTING.md
+    about: Setup, testing, and the rules for changes that touch token parameters.
+  - name: XRP Ledger documentation
+    url: https://xrpl.org/docs.html
+    about: Questions about the ledger itself — trust lines, MPTs, and amendments — are usually answered here.
