@@ -52,6 +52,8 @@ The issuing account is **`rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`** on mainnet. It i
 
 So every parameter in the table above is a configured intention that takes effect only when the issuance transactions are actually submitted, and none of them have been.
 
+**Account topology.** That one account issues **both** tokens — \$PND and \$rPND share a single issuer. Two further accounts are planned: a **treasury** holding 90,000,000,000 \$PND in escrow, and an **operations** account taking the remaining 10,000,000,000 for liquidity, together accounting for the full 100,000,000,000 target. Their addresses exist, but the accounts are **not funded** — they are absent from the ledger entirely, and they will be published here when that changes.
+
 ### Check it yourself
 
 The account is public ledger data, so none of the above needs to be taken on trust:
@@ -84,9 +86,11 @@ Checked against the live amendment set rather than assumed from config. A flat "
 | `AMM`, `AMMClawback` | Enabled | AMM pools are available to IOUs, but not to MPTs — see below |
 | `Escrow`, `TokenEscrow`, `fixTokenEscrowV1` | Enabled | Escrow of issued tokens is supported on the IOU side |
 
-Two consequences follow, and both matter for anyone waiting on these tokens.
+Three consequences follow, and they all matter for anyone waiting on these tokens.
 
 **The \$rPND config as written would be rejected on mainnet today.** It sets `ImmutableFlags` to disable clawback permanently, and that field arrives with `DynamicMPT`, which is not enabled. Submitting the create transaction as currently configured would return `temDISABLED`. Either the config or the amendment set has to change before \$rPND can exist on mainnet.
+
+**One irreversible step has a fixed order.** Because a single account issues both tokens, \$rPND's `MPTokenIssuanceCreate` has to be submitted *before* that issuer is ever blackholed: a blackholed account can never sign again, so blackholing first would permanently make \$rPND impossible at that address. Since the create would fail today regardless, blackholing is blocked until the config drops `ImmutableFlags` or `DynamicMPT` activates.
 
 > [!WARNING]
 > **MPTs cannot trade on mainnet at all.** `OfferCreate` and `AMMCreate` both return `temDISABLED` for an MPT, even when the issuance sets `CanTrade` — and the \$rPND config does not set it in any case. There is no order book and no AMM pool for an MPT today. If both tokens were issued right now, **\$PND, the IOU, would be the only tradable one of the two.** \$rPND could be held and transferred between holders, but not traded on ledger.
@@ -144,8 +148,21 @@ Found a security problem? Please do not open a public issue — see the [Securit
            wording and the CAUTION callout must be corrected in the same commit.
     - TODO: final $rPND MaximumAmount. The config value is an unfrozen working default and is
            deliberately not quoted on this page; publish it only once the figure is settled.
+    - TODO: treasury and operations addresses, once those accounts are funded. Topology is
+           settled — one issuer for both tokens, treasury escrows 90B, operations takes 10B
+           for liquidity — but both accounts are actNotFound, so only the roles are described.
+           Publish each address the way the issuer's is published: with its on-ledger state
+           stated right next to it.
     - TODO: how the $PND 100B target supply is enforced, if at all (issuer key policy,
            blackholing, or nothing). The target is stated above as policy, not as a ledger rule.
+           ORDERING CONSTRAINT, and it is irreversible: the issuer signs for BOTH tokens, so
+           $rPND's MPTokenIssuanceCreate must be submitted BEFORE any blackholing. A blackholed
+           account can never sign again, so blackholing first makes $rPND impossible at that
+           address, permanently and with no recovery. Today it is doubly blocked: the create
+           would fail with temDISABLED anyway, because the config sets ImmutableFlags and
+           DynamicMPT is not enabled on mainnet. So blackholing cannot be considered until
+           either the config drops that field or the amendment activates — and even then, only
+           after the create has succeeded.
   Do not add placeholder or "coming soon" links to the rendered page.
 
   MAINTENANCE: "What mainnet supports today" states live amendment status and will go stale.
