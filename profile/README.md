@@ -122,8 +122,6 @@ Three consequences follow, and they all matter for anyone waiting on these token
 
 All three are documentation and tooling. Nothing has been issued on any network, and none of these repositories has been audited.
 
-> If a link above 404s for you, that repository is still private.
-
 ## Where to start
 
 **Reading about the tokens** — [`docs/tokens.md`](https://github.com/PondProtocol/rPND/blob/main/docs/tokens.md) defines the identity of each asset and [`docs/issuance.md`](https://github.com/PondProtocol/rPND/blob/main/docs/issuance.md) covers accounts, the issuance sequence, and metadata publication. For \$rPND specifically, [`docs/rpnd-spec.md`](https://github.com/PondProtocol/rPND/blob/main/docs/rpnd-spec.md) is the token spec and [`docs/mpt-vs-iou.md`](https://github.com/PondProtocol/rPND/blob/main/docs/mpt-vs-iou.md) explains why it is an MPT rather than a second IOU. The equivalent \$PND and protocol documents are still in the open pull requests linked above.
