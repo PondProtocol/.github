@@ -52,24 +52,41 @@ The issuing account is **`rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`** on mainnet. It i
 
 So every parameter in the table above is a configured intention that takes effect only when the issuance transactions are actually submitted, and none of them have been.
 
-**Account topology.** That one account issues **both** tokens — \$PND and \$rPND share a single issuer. Two further accounts are planned: a **treasury** holding 90,000,000,000 \$PND in escrow, and an **operations** account taking the remaining 10,000,000,000 for liquidity, together accounting for the full 100,000,000,000 target. Their addresses exist, but the accounts are **not funded** — they are absent from the ledger entirely, and they will be published here when that changes.
+### Account topology
+
+That one account issues **both** tokens — \$PND and \$rPND share a single issuer. Two further accounts complete the design, and all three addresses are published here, each with what it is on the ledger right now:
+
+| Role | Address | On ledger now |
+| --- | --- | --- |
+| **Issuer** — signs for both \$PND and \$rPND | `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` | Funded, unconfigured, has issued nothing |
+| **Treasury** — will hold 90,000,000,000 \$PND in escrow | `rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b` | **Does not exist yet** — `actNotFound` |
+| **Operations** — will receive 10,000,000,000 \$PND for liquidity, and runs operations | `rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in` | **Does not exist yet** — `actNotFound` |
+
+Treasury and operations together account for the full 100,000,000,000 target. Neither has been funded, so neither appears on the ledger at all — an unfunded XRPL address is just a string until someone sends it XRP. These are the addresses that *will* hold the escrow and the liquidity once that happens, published now rather than later, for the reason given [below](#why-the-address-matters).
 
 ### Check it yourself
 
-The account is public ledger data, so none of the above needs to be taken on trust:
+All three accounts are public ledger data, so none of the above needs to be taken on trust:
 
 ```bash
+# the issuer
 account_info     rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc   # account flags, Domain, TransferRate, TickSize
 account_lines    rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc   # trust lines — who holds $PND
 account_objects  rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc   # MPT issuance objects — whether $rPND exists
 gateway_balances rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc   # outstanding obligations — issued $PND supply
+
+# treasury and operations — both should come back actNotFound
+account_info     rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b
+account_info     rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in
 ```
 
-As things stand, those return an unconfigured account: no flags set, no trust lines, no objects, no obligations. If that ever stops being true, this page is out of date — believe the ledger, not the page. Deliberately quoted nowhere here are balances, ledger indexes, and sequence numbers, because they go stale; run the queries against a current validated ledger instead.
+As things stand, the issuer returns an unconfigured account — no flags set, no trust lines, no objects, no obligations — and the other two return `actNotFound`. If any of that stops being true, this page is out of date: believe the ledger, not the page. Deliberately quoted nowhere here are balances, ledger indexes, and sequence numbers, because they go stale; run the queries against a current validated ledger instead.
 
 ### Why the address matters
 
 The currency code `PND` is not exclusive to us, and that is the practical reason the address is published here rather than held back. Any XRPL account can issue a token under any code, and several already do: other mainnet accounts issue tokens under the exact code `PND`, and others under near-identical variants such as `Pnd`, `PNDN`, and `PNDC`. An IOU's identity is the pair *(currency code, issuer address)* — the code on its own tells you nothing, and an interface that keys off the ticker alone will conflate all of them.
+
+The same logic is why treasury and operations are listed above while they are still empty. A record published in advance is harder to argue with than one produced after the fact: if anyone later presents a different treasury or operations address as ours, it contradicts what was committed here at a point when those accounts provably held nothing.
 
 > [!CAUTION]
 > **Nothing trading as `PND` today is \$PND.** The issuing account above has issued nothing, on any network. Any `PND` token you can currently find on an exchange or in a DEX order book came from a different account and has no connection to this project. When \$PND is issued it will come from `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` and this page will say so. Until then, treat the address as a tool for refusing to buy the wrong token.
@@ -141,18 +158,10 @@ Found a security problem? Please do not open a public issue — see the [Securit
     - TODO: Discord or other community channel
     - TODO: contact email for general enquiries
     - TODO: $rPND MPTokenIssuanceID, once MPTokenIssuanceCreate actually succeeds.
-           The issuer address is no longer a TODO: it is published in "What is on ledger today",
-           alongside the statements that the account is unconfigured and has issued nothing.
-           Those statements are what make publishing it safe, so keep them together. If the
-           account is ever configured or issues anything, the "unconfigured / issued nothing"
-           wording and the CAUTION callout must be corrected in the same commit.
+           No addresses remain outstanding: issuer, treasury and operations are all published
+           in "What is on ledger today" — see the MAINTENANCE note below before touching them.
     - TODO: final $rPND MaximumAmount. The config value is an unfrozen working default and is
            deliberately not quoted on this page; publish it only once the figure is settled.
-    - TODO: treasury and operations addresses, once those accounts are funded. Topology is
-           settled — one issuer for both tokens, treasury escrows 90B, operations takes 10B
-           for liquidity — but both accounts are actNotFound, so only the roles are described.
-           Publish each address the way the issuer's is published: with its on-ledger state
-           stated right next to it.
     - TODO: how the $PND 100B target supply is enforced, if at all (issuer key policy,
            blackholing, or nothing). The target is stated above as policy, not as a ledger rule.
            ORDERING CONSTRAINT, and it is irreversible: the issuer signs for BOTH tokens, so
@@ -164,6 +173,14 @@ Found a security problem? Please do not open a public issue — see the [Securit
            either the config drops that field or the amendment activates — and even then, only
            after the create has succeeded.
   Do not add placeholder or "coming soon" links to the rendered page.
+
+  MAINTENANCE: the account topology table pairs every address with its current on-ledger state,
+  and that pairing is the whole point — an address published without its state implies
+  infrastructure that does not exist. All three are published: issuer (funded, unconfigured,
+  issued nothing), treasury and operations (both actNotFound). If any of them is funded,
+  configured, or issues anything, update its row, the "As things stand" sentence under the
+  query block, and the CAUTION callout in the SAME commit. An address and its stated state
+  must never drift apart.
 
   MAINTENANCE: "What mainnet supports today" states live amendment status and will go stale.
   Re-check MPTokensV1 and DynamicMPT before any launch announcement. If DynamicMPT is enabled,
